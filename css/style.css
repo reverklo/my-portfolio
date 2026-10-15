@@ -984,52 +984,256 @@ textarea.form-control {
   box-shadow: var(--shadow-card);
 }
 
-/* Responsive */
+/* ========================================================
+   RESPONSIVE DESIGN SYSTEM (MOBILE & TABLET OPTIMIZATIONS)
+   ======================================================== */
+
+@media (max-width: 900px) {
+  .hero-title {
+    font-size: 2.7rem;
+  }
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  /* Navigation on Mobile */
+  .navbar {
+    top: 10px;
+    margin-bottom: 24px;
+  }
+  .nav-container {
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+    border-radius: var(--radius-lg);
+  }
+  .nav-logo {
+    font-size: 1.05rem;
+  }
+  .nav-links {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    width: 100%;
+    padding: 6px 0 2px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-links a {
+    font-size: 0.85rem;
+    white-space: nowrap;
+    padding: 2px 6px;
+  }
+
+  /* Hero Section */
   .hero {
     flex-direction: column-reverse;
     text-align: center;
-    padding: 30px 0 50px;
+    padding: 24px 0 40px;
+    gap: 32px;
   }
   .hero-title {
-    font-size: 2.3rem;
+    font-size: clamp(1.85rem, 6.8vw, 2.4rem);
+    line-height: 1.25;
   }
   .hero-role-wrapper {
     justify-content: center;
+    font-size: 1.05rem;
+  }
+  .hero-subtitle {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 24px;
   }
   .hero-actions {
-    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+  .hero-actions .btn {
+    width: 100%;
+    padding: 14px;
   }
   .hero-tech-stack {
     justify-content: center;
+    gap: 6px;
   }
+  .tech-stack-label {
+    width: 100%;
+    margin-bottom: 4px;
+  }
+  .tech-stack-item {
+    font-size: 0.76rem;
+    padding: 3px 10px;
+  }
+
+  /* Avatar & Badges */
   .avatar-frame {
-    width: 240px;
-    height: 240px;
+    width: 220px;
+    height: 220px;
+    border-radius: 28px;
   }
   .floating-badge {
     padding: 6px 12px;
   }
+  .floating-badge-icon {
+    font-size: 1.1rem;
+  }
+  .floating-badge-title {
+    font-size: 0.78rem;
+  }
+  .floating-badge-sub {
+    font-size: 0.68rem;
+  }
   .badge-top-left {
-    left: -10px;
+    left: -12px;
     top: -10px;
   }
   .badge-bottom-right {
-    right: -10px;
+    right: -12px;
     bottom: -10px;
   }
   .badge-bottom-left {
     display: none;
   }
+
+  /* Stats Banner */
   .stats-banner {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    margin-bottom: 40px;
+    gap: 10px;
+    margin-bottom: 45px;
+  }
+  .stat-item-card {
+    padding: 16px 10px;
+    border-radius: var(--radius-md);
+  }
+  .stat-number {
+    font-size: 1.75rem;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+  }
+
+  /* Sections */
+  .section {
+    padding: 50px 0;
+  }
+  .section-header {
+    margin-bottom: 32px;
+  }
+  .section-title {
+    font-size: 1.75rem;
+  }
+  .section-desc {
+    font-size: 0.92rem;
+  }
+
+  /* Skills Grid */
+  .skills-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .skill-card {
+    padding: 16px 10px;
+  }
+  .skill-icon {
+    font-size: 1.6rem;
+  }
+  .skill-name {
+    font-size: 0.85rem;
+  }
+  .skill-level {
+    font-size: 0.7rem;
+  }
+
+  /* Projects Grid */
+  .projects-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .project-thumb-wrap {
+    height: 180px;
+  }
+  .project-content {
+    padding: 18px 16px;
+  }
+  .project-title {
+    font-size: 1.15rem;
+  }
+  .project-desc {
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+  }
+  .project-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .project-link-btn {
+    padding: 10px;
+  }
+
+  /* Contact Section */
+  .contact-card {
+    padding: 36px 16px;
+  }
+  .contact-links {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .contact-item-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  /* Admin Studio Responsive */
+  .admin-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    gap: 16px;
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+  }
+  .admin-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+    gap: 8px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .admin-tab-btn {
+    white-space: nowrap;
+    padding: 8px 14px;
+    font-size: 0.88rem;
+  }
+  .form-card {
+    padding: 22px 16px;
   }
   .form-row {
     grid-template-columns: 1fr;
+    gap: 0;
   }
-  .nav-links {
-    display: none;
+  .table-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .modal-box {
+    padding: 24px 18px;
   }
 }
+
