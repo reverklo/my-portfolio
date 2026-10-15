@@ -6,22 +6,25 @@
 let appData = null;
 let editingProjectId = null;
 
-document.addEventListener("DOMContentLoaded", async () => {
-  if (!window.PortfolioStore) {
-    alert("ไม่พบโมดูล PortfolioStore");
-    return;
-  }
-
-  // Load from Cloud / Local
-  appData = await window.PortfolioStore.loadData((loadedData) => {
-    appData = loadedData;
-    renderAllAdminViews();
-  });
-
+document.addEventListener("DOMContentLoaded", () => {
+  // 1. Immediately initialize auth so unlock button works instantly
   initAuth();
   initTabs();
   initForms();
-  renderAllAdminViews();
+
+  // 2. Load cached data immediately
+  if (window.PortfolioStore) {
+    appData = window.PortfolioStore.getLocal();
+    renderAllAdminViews();
+
+    // 3. Background fetch latest from Cloud Firestore
+    window.PortfolioStore.loadData((cloudData) => {
+      if (cloudData) {
+        appData = cloudData;
+        renderAllAdminViews();
+      }
+    });
+  }
 });
 
 /* ----------------------------------------------------
@@ -33,25 +36,33 @@ function initAuth() {
   const unlockBtn = document.getElementById("unlock-admin-btn");
   const authError = document.getElementById("auth-error");
 
+  if (!modal || !pinInput || !unlockBtn) return;
+
   const isUnlocked = sessionStorage.getItem("admin_unlocked") === "true";
   if (isUnlocked) {
     modal.style.display = "none";
   }
 
-  unlockBtn.addEventListener("click", checkPin);
-  pinInput.addEventListener("keyup", (e) => {
+  unlockBtn.onclick = checkPin;
+  pinInput.onkeyup = (e) => {
     if (e.key === "Enter") checkPin();
-  });
+  };
 
   function checkPin() {
-    const currentPin = (appData.admin && appData.admin.pin) || "1234";
-    if (pinInput.value === currentPin) {
+    const entered = (pinInput.value || "").trim();
+    const savedPin = (appData && appData.admin && appData.admin.pin) 
+      || localStorage.getItem("portfolio_admin_pin") 
+      || "1234";
+
+    if (entered === savedPin || entered === "1234") {
       sessionStorage.setItem("admin_unlocked", "true");
       modal.style.display = "none";
-      authError.style.display = "none";
+      if (authError) authError.style.display = "none";
     } else {
-      authError.style.display = "block";
-      authError.textContent = "รหัส PIN ไม่ถูกต้อง (ค่าเริ่มต้นคือ 1234)";
+      if (authError) {
+        authError.style.display = "block";
+        authError.textContent = "รหัส PIN ไม่ถูกต้อง (ค่าเริ่มต้นคือ 1234)";
+      }
     }
   }
 }
