@@ -14,9 +14,13 @@ document.addEventListener("DOMContentLoaded", () => {
     renderProfile(data.profile);
     renderSkills(data.skills);
     renderProjects(data.projects);
+    renderExperience(data.experience);
+    renderCertificates(data.certificates);
     renderContact(data.contact);
     setupFilters(data.projects);
   });
+
+  setupCertLightbox();
 });
 
 function setupMobileMenu() {
@@ -168,3 +172,128 @@ function renderContact(contact) {
     facebookLink.style.display = "inline-flex";
   }
 }
+
+function renderExperience(experience) {
+  const container = document.getElementById("experience-container");
+  if (!container) return;
+
+  const list = experience || [];
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 40px; color: var(--text-dim);">
+        <p>ยังไม่มีข้อมูลประสบการณ์ทำงาน</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = list.map(item => {
+    const skillsHtml = (item.skills || []).map(s => `<span class="tag-badge">${s}</span>`).join("");
+    return `
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <div>
+              <h3 class="timeline-role">${item.role}</h3>
+              <div class="timeline-company">🏢 ${item.company}</div>
+            </div>
+            <span class="timeline-period-badge">📅 ${item.period || ""}</span>
+          </div>
+          <p class="timeline-desc">${item.desc || ""}</p>
+          ${skillsHtml ? `<div class="timeline-skills">${skillsHtml}</div>` : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderCertificates(certificates) {
+  const container = document.getElementById("certificates-container");
+  if (!container) return;
+
+  const list = certificates || [];
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-dim);">
+        <p>ยังไม่มีรายการใบประกาศนียบัตร</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = list.map(cert => {
+    const fallbackImg = "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=800&auto=format&fit=crop&q=80";
+    const certImg = cert.imageUrl || fallbackImg;
+    const verifyBtn = cert.credentialUrl && cert.credentialUrl !== "#"
+      ? `<a href="${cert.credentialUrl}" target="_blank" rel="noopener" class="cert-link-btn cert-link-verify">🌐 ตรวจสอบออนไลน์</a>`
+      : "";
+
+    return `
+      <div class="cert-card">
+        <div class="cert-thumb-wrap" onclick="openCertLightbox('${certImg}', '${escapeHtml(cert.title)} - ${escapeHtml(cert.issuer || "")}')">
+          <img class="cert-thumb" src="${certImg}" alt="${cert.title}" loading="lazy" onerror="this.src='${fallbackImg}'" />
+          <span class="cert-zoom-hint">🔍 คลิกดูรูปใหญ่</span>
+          <span class="cert-date-badge">${cert.date || ""}</span>
+        </div>
+        <div class="cert-content">
+          <h3 class="cert-title">${cert.title}</h3>
+          <div class="cert-issuer">
+            <span>🏛️</span>
+            <span>${cert.issuer || "ผู้มอบใบรับรอง"}</span>
+          </div>
+          <div class="cert-actions">
+            <button type="button" class="cert-link-btn" onclick="openCertLightbox('${certImg}', '${escapeHtml(cert.title)} - ${escapeHtml(cert.issuer || "")}')">
+              🔍 ดูรูปใบประกาศฯ
+            </button>
+            ${verifyBtn}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function setupCertLightbox() {
+  const modal = document.getElementById("cert-lightbox");
+  const closeBtn = document.getElementById("cert-modal-close-btn");
+  if (!modal || !closeBtn) return;
+
+  closeBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.style.display === "flex") {
+      modal.style.display = "none";
+    }
+  });
+}
+
+window.openCertLightbox = function(imgSrc, caption) {
+  const modal = document.getElementById("cert-lightbox");
+  const modalImg = document.getElementById("cert-modal-img");
+  const modalCaption = document.getElementById("cert-modal-caption");
+
+  if (!modal || !modalImg) return;
+  modalImg.src = imgSrc;
+  if (modalCaption) modalCaption.textContent = caption || "";
+  modal.style.display = "flex";
+};
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/'/g, "&#39;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+

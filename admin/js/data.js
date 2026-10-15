@@ -74,6 +74,42 @@ const DEFAULT_PORTFOLIO_DATA = {
       githubUrl: "https://github.com"
     }
   ],
+  experience: [
+    {
+      id: "exp_1",
+      role: "Full-Stack Developer & IoT Engineer",
+      company: "Smart Parking & IoT Projects (SPU)",
+      period: "2024 - ปัจจุบัน",
+      desc: "ออกแบบและพัฒนาระบบตรวจจับที่จอดรถอัจฉริยะแบบ Real-Time ด้วยบอร์ดไมโครคอนโทรลเลอร์ ESP32 เชื่อมต่อ MQTT Broker และสร้าง Web Dashboard สำหรับแสดงผลสถิติและสถานะที่จอดรถ",
+      skills: ["React", "Node.js", "ESP32", "MQTT", "REST API"]
+    },
+    {
+      id: "exp_2",
+      role: "Web Application Developer",
+      company: "Freelance & University Projects",
+      period: "2023 - 2024",
+      desc: "พัฒนาเว็บแอปพลิเคชันระบบประเมินผลออนไลน์และระบบสั่งอาหาร ออกแบบฐานข้อมูล เชื่อมต่อระบบ Cloud Backend และออกแบบ UI ที่เน้นประสบการณ์ผู้ใช้ (UX/UI)",
+      skills: ["JavaScript", "HTML5/CSS3", "Firebase", "Docker", "Python"]
+    }
+  ],
+  certificates: [
+    {
+      id: "cert_1",
+      title: "IoT & Embedded Microcontroller Development",
+      issuer: "SPU Innovation & Technology Center",
+      date: "2024",
+      imageUrl: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=800&auto=format&fit=crop&q=80",
+      credentialUrl: "#"
+    },
+    {
+      id: "cert_2",
+      title: "Full-Stack Web Application Programming",
+      issuer: "Professional Development Certificate",
+      date: "2023",
+      imageUrl: "https://images.unsplash.com/photo-1496171367470-9ed9a91ea931?w=800&auto=format&fit=crop&q=80",
+      credentialUrl: "#"
+    }
+  ],
   contact: {
     email: "your.email@example.com",
     github: "https://github.com/reverklo",
@@ -109,6 +145,8 @@ const PortfolioStore = {
         const doc = await firestoreDb.collection("portfolio").doc("main").get();
         if (doc.exists) {
           data = doc.data();
+          if (!data.experience) data.experience = DEFAULT_PORTFOLIO_DATA.experience;
+          if (!data.certificates) data.certificates = DEFAULT_PORTFOLIO_DATA.certificates;
           this.setLocal(data);
         } else {
           // initialize cloud
@@ -125,7 +163,12 @@ const PortfolioStore = {
   getLocal() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (!parsed.experience) parsed.experience = DEFAULT_PORTFOLIO_DATA.experience;
+        if (!parsed.certificates) parsed.certificates = DEFAULT_PORTFOLIO_DATA.certificates;
+        return parsed;
+      }
     } catch (e) {}
     return JSON.parse(JSON.stringify(DEFAULT_PORTFOLIO_DATA));
   },

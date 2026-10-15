@@ -1,10 +1,13 @@
 /**
  * Dedicated Admin Studio Script
  * Cloud-First Firestore Save & Edit with Auto Image Compression
+ * Supports Profile, Projects, Skills, Experience, and Certificates
  */
 
 let appData = null;
 let editingProjectId = null;
+let editingExperienceId = null;
+let editingCertId = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   // 1. Immediately initialize auth so unlock button works instantly
@@ -35,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
    Resizes to max dimensions & quality to keep Base64 < 45KB
    Guarantees it never exceeds Firestore (1MB) or LocalStorage (5MB)
    ---------------------------------------------------- */
-function compressImage(file, maxWidth = 450, maxHeight = 450, quality = 0.82) {
+function compressImage(file, maxWidth = 500, maxHeight = 500, quality = 0.82) {
   return new Promise((resolve, reject) => {
     if (!file || !file.type.startsWith("image/")) {
       return reject(new Error("กรุณาเลือกไฟล์รูปภาพที่ถูกต้อง (JPG, PNG, WebP)"));
@@ -188,6 +191,8 @@ function renderAllAdminViews() {
   loadProfileForm();
   renderProjectTable();
   renderSkillList();
+  renderExperienceTable();
+  renderCertificateTable();
   loadContactForm();
 }
 
@@ -218,18 +223,18 @@ function renderProjectTable() {
 
   const projects = appData.projects || [];
   if (projects.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-dim);">ยังไม่มีรายการผลงาน</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-dim);">ยังไม่มีรายการผลงาน</td></tr>`;
     return;
   }
 
   tbody.innerHTML = projects.map(proj => `
     <tr>
       <td>
-        <div style="font-weight: 600; color: var(--text-main);">${proj.title}</div>
-        <div style="font-size: 0.8rem; color: var(--text-dim);">${proj.category}</div>
+        <div style="font-weight: 600; color: var(--text-main);">${escapeHtml(proj.title)}</div>
+        <div style="font-size: 0.8rem; color: var(--text-dim);">${escapeHtml(proj.category)}</div>
       </td>
       <td>
-        <span style="font-size: 0.85rem; color: var(--text-muted);">${(proj.tags || []).join(", ")}</span>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">${(proj.tags || []).map(t => escapeHtml(t)).join(", ")}</span>
       </td>
       <td>
         <div class="table-actions">
@@ -250,11 +255,74 @@ function renderSkillList() {
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg-input); border-radius: var(--radius-sm); margin-bottom: 8px;">
       <div>
         <span style="font-size: 1.2rem; margin-right: 8px;">${s.icon || "💻"}</span>
-        <strong>${s.name}</strong> 
-        <span style="font-size: 0.8rem; color: var(--text-dim); margin-left: 8px;">(${s.level || "Skill"})</span>
+        <strong>${escapeHtml(s.name)}</strong> 
+        <span style="font-size: 0.8rem; color: var(--text-dim); margin-left: 8px;">(${escapeHtml(s.level || "Skill")})</span>
       </div>
       <button class="btn-icon-danger" onclick="deleteSkill(${index})">ลบ</button>
     </div>
+  `).join("");
+}
+
+function renderExperienceTable() {
+  const tbody = document.getElementById("experience-table-body");
+  if (!tbody) return;
+
+  const experiences = appData.experience || [];
+  if (experiences.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-dim);">ยังไม่มีรายการประสบการณ์ทำงาน</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = experiences.map(exp => `
+    <tr>
+      <td>
+        <div style="font-weight: 600; color: var(--text-main);">${escapeHtml(exp.role)}</div>
+        <div style="font-size: 0.82rem; color: var(--text-dim);">🏢 ${escapeHtml(exp.company)}</div>
+      </td>
+      <td>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">${escapeHtml(exp.period || "")}</span>
+      </td>
+      <td>
+        <div class="table-actions">
+          <button class="btn-icon-edit" onclick="editExperience('${exp.id}')">✏️ แก้ไข</button>
+          <button class="btn-icon-danger" onclick="deleteExperience('${exp.id}')">🗑️ ลบ</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function renderCertificateTable() {
+  const tbody = document.getElementById("certificates-table-body");
+  if (!tbody) return;
+
+  const certs = appData.certificates || [];
+  if (certs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-dim);">ยังไม่มีรายการใบประกาศนียบัตร</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = certs.map(c => `
+    <tr>
+      <td>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <img src="${c.imageUrl || 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=100'}" style="width: 44px; height: 32px; border-radius: 4px; object-fit: cover;" onerror="this.style.display='none'" />
+          <div>
+            <div style="font-weight: 600; color: var(--text-main);">${escapeHtml(c.title)}</div>
+            <div style="font-size: 0.82rem; color: var(--text-dim);">🏛️ ${escapeHtml(c.issuer || "")}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">${escapeHtml(c.date || "")}</span>
+      </td>
+      <td>
+        <div class="table-actions">
+          <button class="btn-icon-edit" onclick="editCertificate('${c.id}')">✏️ แก้ไข</button>
+          <button class="btn-icon-danger" onclick="deleteCertificate('${c.id}')">🗑️ ลบ</button>
+        </div>
+      </td>
+    </tr>
   `).join("");
 }
 
@@ -443,6 +511,146 @@ function initForms() {
     renderSkillList();
   });
 
+  // Experience Form (Add / Edit)
+  const expForm = document.getElementById("experience-form");
+  if (expForm) {
+    expForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const role = document.getElementById("exp-role").value.trim();
+      const company = document.getElementById("exp-company").value.trim();
+      const period = document.getElementById("exp-period").value.trim();
+      const desc = document.getElementById("exp-desc").value.trim();
+      const skills = document.getElementById("exp-skills").value
+        .split(",")
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+      if (!appData.experience) appData.experience = [];
+
+      if (editingExperienceId) {
+        const idx = appData.experience.findIndex(x => x.id === editingExperienceId);
+        if (idx !== -1) {
+          appData.experience[idx] = {
+            ...appData.experience[idx],
+            role, company, period, desc, skills
+          };
+        }
+        editingExperienceId = null;
+        document.getElementById("exp-submit-btn").textContent = "➕ เพิ่มประสบการณ์ใหม่";
+        document.getElementById("exp-cancel-btn").style.display = "none";
+        document.getElementById("exp-form-title").textContent = "➕ เพิ่มประสบการณ์ทำงาน & กิจกรรม";
+      } else {
+        const newExp = {
+          id: "exp_" + Date.now(),
+          role, company, period, desc, skills
+        };
+        appData.experience.unshift(newExp);
+      }
+
+      expForm.reset();
+      await saveAndNotify("บันทึกประสบการณ์ทำงานขึ้น Cloud แล้ว!");
+      renderExperienceTable();
+    });
+
+    document.getElementById("exp-cancel-btn").addEventListener("click", () => {
+      editingExperienceId = null;
+      expForm.reset();
+      document.getElementById("exp-submit-btn").textContent = "➕ เพิ่มประสบการณ์ใหม่";
+      document.getElementById("exp-cancel-btn").style.display = "none";
+      document.getElementById("exp-form-title").textContent = "➕ เพิ่มประสบการณ์ทำงาน & กิจกรรม";
+    });
+  }
+
+  // Certificates Form (Add / Edit & Image Compression)
+  const certForm = document.getElementById("cert-form");
+  const certImageFile = document.getElementById("cert-image-file");
+  const certImageInput = document.getElementById("cert-image");
+  const certPreview = document.getElementById("cert-preview-img");
+  const certHint = document.getElementById("cert-upload-hint");
+
+  if (certImageFile) {
+    certImageFile.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (certHint) certHint.innerHTML = `<span>⏳ กำลังย่อขนาดรูปใบประกาศฯ...</span>`;
+
+      try {
+        const compressedBase64 = await compressImage(file, 850, 600, 0.82);
+        certImageInput.value = compressedBase64;
+        if (certPreview) {
+          certPreview.src = compressedBase64;
+          certPreview.style.display = "block";
+        }
+        if (certHint) certHint.innerHTML = `<span style="color: #22c55e;">✅ ย่อรูปใบประกาศฯ พร้อมแล้ว</span>`;
+      } catch (err) {
+        alert("เกิดข้อผิดพลาดในการโหลดรูป: " + err.message);
+      }
+    });
+  }
+
+  if (certImageInput && certPreview) {
+    certImageInput.addEventListener("input", (e) => {
+      const val = e.target.value.trim();
+      if (val) {
+        certPreview.src = val;
+        certPreview.style.display = "block";
+      } else {
+        certPreview.style.display = "none";
+      }
+    });
+  }
+
+  if (certForm) {
+    certForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById("cert-title").value.trim();
+      const issuer = document.getElementById("cert-issuer").value.trim();
+      const date = document.getElementById("cert-date").value.trim();
+      const credentialUrl = document.getElementById("cert-credential").value.trim();
+      const imageUrl = document.getElementById("cert-image").value.trim();
+
+      if (!appData.certificates) appData.certificates = [];
+
+      if (editingCertId) {
+        const idx = appData.certificates.findIndex(c => c.id === editingCertId);
+        if (idx !== -1) {
+          appData.certificates[idx] = {
+            ...appData.certificates[idx],
+            title, issuer, date, credentialUrl, imageUrl
+          };
+        }
+        editingCertId = null;
+        document.getElementById("cert-submit-btn").textContent = "➕ เพิ่มใบประกาศนียบัตร";
+        document.getElementById("cert-cancel-btn").style.display = "none";
+        document.getElementById("cert-form-title").textContent = "➕ เพิ่มใบประกาศนียบัตร & วุฒิบัตร";
+      } else {
+        const newCert = {
+          id: "cert_" + Date.now(),
+          title, issuer, date, credentialUrl,
+          imageUrl: imageUrl || "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=800&auto=format&fit=crop&q=80"
+        };
+        appData.certificates.unshift(newCert);
+      }
+
+      certForm.reset();
+      if (certPreview) certPreview.style.display = "none";
+      await saveAndNotify("บันทึกใบประกาศนียบัตรขึ้น Cloud แล้ว!");
+      renderCertificateTable();
+    });
+
+    document.getElementById("cert-cancel-btn").addEventListener("click", () => {
+      editingCertId = null;
+      certForm.reset();
+      if (certPreview) certPreview.style.display = "none";
+      document.getElementById("cert-submit-btn").textContent = "➕ เพิ่มใบประกาศนียบัตร";
+      document.getElementById("cert-cancel-btn").style.display = "none";
+      document.getElementById("cert-form-title").textContent = "➕ เพิ่มใบประกาศนียบัตร & วุฒิบัตร";
+    });
+  }
+
   // Save Contact & PIN
   document.getElementById("contact-form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -537,6 +745,66 @@ window.deleteSkill = async function(index) {
   }
 };
 
+window.editExperience = function(id) {
+  if (!appData.experience) return;
+  const exp = appData.experience.find(x => x.id === id);
+  if (!exp) return;
+
+  editingExperienceId = id;
+  document.getElementById("exp-role").value = exp.role || "";
+  document.getElementById("exp-company").value = exp.company || "";
+  document.getElementById("exp-period").value = exp.period || "";
+  document.getElementById("exp-desc").value = exp.desc || "";
+  document.getElementById("exp-skills").value = (exp.skills || []).join(", ");
+
+  document.getElementById("exp-submit-btn").textContent = "💾 บันทึกการแก้ไข";
+  document.getElementById("exp-cancel-btn").style.display = "inline-flex";
+  document.getElementById("exp-form-title").textContent = "✏️ แก้ไขประสบการณ์ทำงาน";
+
+  document.getElementById("experience-form").scrollIntoView({ behavior: "smooth" });
+};
+
+window.deleteExperience = async function(id) {
+  if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบรายการประสบการณ์นี้?")) {
+    appData.experience = (appData.experience || []).filter(x => x.id !== id);
+    await saveAndNotify("ลบประสบการณ์ทำงานออกจาก Cloud เรียบร้อยแล้ว");
+    renderExperienceTable();
+  }
+};
+
+window.editCertificate = function(id) {
+  if (!appData.certificates) return;
+  const cert = appData.certificates.find(c => c.id === id);
+  if (!cert) return;
+
+  editingCertId = id;
+  document.getElementById("cert-title").value = cert.title || "";
+  document.getElementById("cert-issuer").value = cert.issuer || "";
+  document.getElementById("cert-date").value = cert.date || "";
+  document.getElementById("cert-credential").value = cert.credentialUrl || "";
+  document.getElementById("cert-image").value = cert.imageUrl || "";
+
+  const certPreview = document.getElementById("cert-preview-img");
+  if (certPreview && cert.imageUrl) {
+    certPreview.src = cert.imageUrl;
+    certPreview.style.display = "block";
+  }
+
+  document.getElementById("cert-submit-btn").textContent = "💾 บันทึกการแก้ไข";
+  document.getElementById("cert-cancel-btn").style.display = "inline-flex";
+  document.getElementById("cert-form-title").textContent = "✏️ แก้ไขใบประกาศนียบัตร";
+
+  document.getElementById("cert-form").scrollIntoView({ behavior: "smooth" });
+};
+
+window.deleteCertificate = async function(id) {
+  if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบใบประกาศนียบัตรนี้?")) {
+    appData.certificates = (appData.certificates || []).filter(c => c.id !== id);
+    await saveAndNotify("ลบใบประกาศนียบัตรออกจาก Cloud เรียบร้อยแล้ว");
+    renderCertificateTable();
+  }
+};
+
 async function saveAndNotify(msg) {
   showToast("⏳ กำลังบันทึกข้อมูล...");
   const res = await window.PortfolioStore.saveToCloud(appData);
@@ -576,4 +844,14 @@ function showToast(msg, duration = 3000, isWarning = false) {
     toast.style.opacity = "0";
     setTimeout(() => { toast.style.display = "none"; }, 300);
   }, duration);
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/'/g, "&#39;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }

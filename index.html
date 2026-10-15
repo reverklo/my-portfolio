@@ -35,6 +35,8 @@
         <li><a href="#about"><span class="menu-icon">👤</span> เกี่ยวกับฉัน</a></li>
         <li><a href="#skills"><span class="menu-icon">⚡</span> ทักษะและความเชี่ยวชาญ</a></li>
         <li><a href="#projects"><span class="menu-icon">🚀</span> ผลงานโปรเจกต์</a></li>
+        <li><a href="#experience"><span class="menu-icon">💼</span> ประสบการณ์</a></li>
+        <li><a href="#certificates"><span class="menu-icon">🏆</span> ใบประกาศนียบัตร</a></li>
         <li><a href="#contact"><span class="menu-icon">📬</span> ติดต่อ</a></li>
       </ul>
     </div>
@@ -189,6 +191,33 @@
       </div>
     </section>
 
+    <!-- Experience Section (Timeline) -->
+    <section class="section" id="experience">
+      <div class="section-header">
+        <span class="section-tag">Career & Journey</span>
+        <h2 class="section-title">ประสบการณ์ทำงาน & กิจกรรม</h2>
+        <p class="section-desc">ประวัติการทำงาน การพัฒนาโปรเจกต์จริง และเส้นทางการเรียนรู้ด้านเทคโนโลยี</p>
+      </div>
+
+      <div class="experience-timeline" id="experience-container">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+    <!-- Certificates Section (Grid) -->
+    <section class="section" id="certificates">
+      <div class="section-header">
+        <span class="section-tag">Credentials & Awards</span>
+        <h2 class="section-title">ใบประกาศนียบัตร & วุฒิบัตร</h2>
+        <p class="section-desc">การผ่านการอบรม การรับรองทักษะวิชาชีพ และผลงานทางวิชาการ</p>
+      </div>
+
+      <div class="certificates-grid" id="certificates-container">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+
     <!-- Contact Section -->
     <section class="section" id="contact">
       <div class="contact-card">
@@ -221,7 +250,14 @@
     <div class="container">
       <p>© 2026 ชิษณุพงศ์ นมัสศิลา (Chitsanupong). All rights reserved.</p>
     </div>
-  </footer>
+  <!-- Certificate Lightbox Modal -->
+  <div id="cert-lightbox" class="cert-modal-overlay" style="display: none;">
+    <div class="cert-modal-container">
+      <button type="button" class="cert-modal-close" id="cert-modal-close-btn" aria-label="ปิด">&times;</button>
+      <img id="cert-modal-img" src="" alt="Certificate Preview" class="cert-modal-img" />
+      <div id="cert-modal-caption" class="cert-modal-caption"></div>
+    </div>
+  </div>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>

@@ -89,6 +89,8 @@
       <button class="admin-tab-btn active" data-tab="profile">👤 ข้อมูลส่วนตัว</button>
       <button class="admin-tab-btn" data-tab="projects">🚀 จัดการผลงาน (Projects)</button>
       <button class="admin-tab-btn" data-tab="skills">⚡ ทักษะ (Skills)</button>
+      <button class="admin-tab-btn" data-tab="experience">💼 ประสบการณ์ (Experience)</button>
+      <button class="admin-tab-btn" data-tab="certificates">🏆 ใบประกาศนียบัตร (Certificates)</button>
       <button class="admin-tab-btn" data-tab="contact">📬 ข้อมูลติดต่อ & รหัสผ่าน</button>
     </div>
 
@@ -302,7 +304,143 @@
     </div>
 
     <!-- ==============================================
-         TAB 4: ข้อมูลติดต่อ & รหัสผ่าน (CONTACT & PIN)
+         TAB 4: ประสบการณ์ (EXPERIENCE)
+         ============================================== -->
+    <div class="admin-tab-content" id="tab-experience" style="display: none;">
+      <div class="form-card">
+        <h2 style="font-size: 1.3rem; margin-bottom: 24px;" id="exp-form-title">➕ เพิ่ม / แก้ไข ประสบการณ์ทำงาน & กิจกรรม</h2>
+        <form id="experience-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ตำแหน่ง / บทบาท (Role)</label>
+              <input type="text" id="exp-role" class="form-control" placeholder="เช่น Full-Stack Developer หรือ นักศึกษาฝึกงาน" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">บริษัท / โครงการ / สถานศึกษา (Company / Organization)</label>
+              <input type="text" id="exp-company" class="form-control" placeholder="เช่น SPU Smart Innovation Lab หรือ Freelance" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ช่วงเวลา (Period)</label>
+              <input type="text" id="exp-period" class="form-control" placeholder="เช่น 2024 - ปัจจุบัน หรือ ม.ค. 2023 - ธ.ค. 2023" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">ทักษะ / เทคโนโลยีที่ใช้ (คั่นด้วยเครื่องหมายจุลภาค , )</label>
+              <input type="text" id="exp-skills" class="form-control" placeholder="เช่น React, Node.js, ESP32, Docker" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">รายละเอียดหน้าที่และความรับผิดชอบ (Description)</label>
+            <textarea id="exp-desc" class="form-control" rows="3" placeholder="อธิบายหน้าที่ งานที่ทำ และผลลัพธ์ที่ได้..." required></textarea>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <button type="submit" id="exp-submit-btn" class="btn btn-primary">
+              ☁️ บันทึกประสบการณ์ขึ้น Cloud
+            </button>
+            <button type="button" id="exp-cancel-btn" class="btn btn-secondary" style="display: none;">
+              ยกเลิก
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="form-card">
+        <h2 style="font-size: 1.3rem; margin-bottom: 16px;">รายการประสบการณ์ทำงานปัจจุบัน</h2>
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ตำแหน่ง & บริษัท</th>
+                <th>ช่วงเวลา</th>
+                <th style="width: 140px;">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="experience-table-body">
+              <!-- Rendered by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==============================================
+         TAB 5: ใบประกาศนียบัตร (CERTIFICATES)
+         ============================================== -->
+    <div class="admin-tab-content" id="tab-certificates" style="display: none;">
+      <div class="form-card">
+        <h2 style="font-size: 1.3rem; margin-bottom: 24px;" id="cert-form-title">➕ เพิ่ม / แก้ไข ใบประกาศนียบัตร & วุฒิบัตร</h2>
+        <form id="cert-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ชื่อหลักสูตร / รางวัล (Certificate Title)</label>
+              <input type="text" id="cert-title" class="form-control" placeholder="เช่น IoT & Embedded Microcontroller Development" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">สถาบัน / ผู้มอบ (Issuer / Organization)</label>
+              <input type="text" id="cert-issuer" class="form-control" placeholder="เช่น Cisco Networking Academy, Coursera, มหาวิทยาลัยศรีปทุม" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">ปีที่ได้รับ / วันที่ (Date / Year)</label>
+              <input type="text" id="cert-date" class="form-control" placeholder="เช่น 2024 หรือ ต.ค. 2024" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">ลิงก์ตรวจสอบออนไลน์ (Credential / Verification URL)</label>
+              <input type="url" id="cert-credential" class="form-control" placeholder="https://... หรือปล่อยว่างไว้ได้" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">รูปภาพใบประกาศนียบัตร (Certificate Image)</label>
+            <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+              <img id="cert-preview-img" src="" alt="Preview" style="width: 80px; height: 55px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-subtle); display: none;" />
+              <label class="btn btn-secondary" style="cursor: pointer; padding: 6px 14px; font-size: 0.82rem;">
+                📁 เลือกรูปใบประกาศฯ จากเครื่อง
+                <input type="file" id="cert-image-file" accept="image/*" style="display: none;" />
+              </label>
+              <span id="cert-upload-hint" style="font-size: 0.78rem; color: var(--text-dim);">เลือกไฟล์รูป ระบบจะย่อขนาดให้อัตโนมัติ</span>
+            </div>
+            <input type="text" id="cert-image" class="form-control" placeholder="หรือวางลิงก์ URL รูปภาพ เช่น https://..." />
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <button type="submit" id="cert-submit-btn" class="btn btn-primary">
+              ☁️ บันทึกใบประกาศฯ ขึ้น Cloud
+            </button>
+            <button type="button" id="cert-cancel-btn" class="btn btn-secondary" style="display: none;">
+              ยกเลิก
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="form-card">
+        <h2 style="font-size: 1.3rem; margin-bottom: 16px;">รายการใบประกาศนียบัตรปัจจุบัน</h2>
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>หลักสูตร & สถาบัน</th>
+                <th>ปีที่ได้รับ</th>
+                <th style="width: 140px;">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="certificates-table-body">
+              <!-- Rendered by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==============================================
+         TAB 6: ข้อมูลติดต่อ & รหัสผ่าน (CONTACT & PIN)
          ============================================== -->
     <div class="admin-tab-content" id="tab-contact" style="display: none;">
       <div class="form-card">
