@@ -91,7 +91,12 @@ function loadProfileForm() {
   document.getElementById("input-en-name").value = p.englishName || "";
   document.getElementById("input-title").value = p.title || "";
   document.getElementById("input-status").value = p.statusText || "";
-  document.getElementById("input-avatar").value = (p.avatarUrl && !p.avatarUrl.includes("unsplash")) ? p.avatarUrl : "images/avatar.jpg";
+  
+  const avatarPath = (p.avatarUrl && !p.avatarUrl.includes("unsplash")) ? p.avatarUrl : "images/avatar.jpg";
+  document.getElementById("input-avatar").value = avatarPath;
+  const previewImg = document.getElementById("avatar-preview-img");
+  if (previewImg) previewImg.src = avatarPath;
+
   document.getElementById("input-bio").value = p.bio || "";
   document.getElementById("input-resume").value = p.resumeLink || "";
 }
@@ -157,6 +162,64 @@ function loadContactForm() {
    FORMS & ACTIONS
    ---------------------------------------------------- */
 function initForms() {
+  // Avatar file picker & preview
+  const avatarFile = document.getElementById("input-avatar-file");
+  const avatarInput = document.getElementById("input-avatar");
+  const avatarPreview = document.getElementById("avatar-preview-img");
+
+  if (avatarFile) {
+    avatarFile.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        avatarInput.value = event.target.result;
+        if (avatarPreview) avatarPreview.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (avatarInput && avatarPreview) {
+    avatarInput.addEventListener("input", (e) => {
+      const val = e.target.value.trim();
+      if (val) avatarPreview.src = val;
+    });
+  }
+
+  // Project image picker & preview
+  const projImageFile = document.getElementById("proj-image-file");
+  const projImageInput = document.getElementById("proj-image");
+  const projPreview = document.getElementById("proj-preview-img");
+
+  if (projImageFile) {
+    projImageFile.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        projImageInput.value = event.target.result;
+        if (projPreview) {
+          projPreview.src = event.target.result;
+          projPreview.style.display = "block";
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (projImageInput && projPreview) {
+    projImageInput.addEventListener("input", (e) => {
+      const val = e.target.value.trim();
+      if (val) {
+        projPreview.src = val;
+        projPreview.style.display = "block";
+      } else {
+        projPreview.style.display = "none";
+      }
+    });
+  }
+
   // Save Profile
   document.getElementById("profile-form").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -300,6 +363,13 @@ function initForms() {
 /* ----------------------------------------------------
    GLOBAL HELPERS
    ---------------------------------------------------- */
+window.setAvatarPreset = function(path) {
+  const avatarInput = document.getElementById("input-avatar");
+  const avatarPreview = document.getElementById("avatar-preview-img");
+  if (avatarInput) avatarInput.value = path;
+  if (avatarPreview) avatarPreview.src = path;
+};
+
 window.editProject = function(id) {
   const proj = appData.projects.find(p => p.id === id);
   if (!proj) return;

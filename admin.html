@@ -126,9 +126,32 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">ลิงก์รูปโปรไฟล์ (URL รูปภาพ หรือ Unsplash)</label>
-            <input type="url" id="input-avatar" class="form-control" placeholder="https://..." />
-            <span style="font-size: 0.8rem; color: var(--text-dim);">สามารถใส่ลิงก์รูปจากเว็บ หรือรูปในโฟลเดอร์ เช่น <code>รูปภาพ/profile.jpg</code> ก็ได้ครับ</span>
+            <label class="form-label">รูปโปรไฟล์ (Avatar)</label>
+            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
+              <img id="avatar-preview-img" src="images/avatar.jpg" alt="Preview" style="width: 76px; height: 76px; border-radius: 16px; object-fit: cover; border: 1px solid var(--border-hover); background: #18181b;" />
+              <div>
+                <label class="btn btn-secondary" style="cursor: pointer; padding: 8px 16px; font-size: 0.85rem;">
+                  📁 เลือกไฟล์รูปจากเครื่องคอม
+                  <input type="file" id="input-avatar-file" accept="image/*" style="display: none;" />
+                </label>
+                <div style="font-size: 0.78rem; color: var(--text-dim); margin-top: 6px;">
+                  เลือกไฟล์รูปในเครื่องได้โดยตรง (JPG, PNG) หรือวางลิงก์/ที่อยู่ไฟล์ด้านล่าง
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Preset Avatars -->
+            <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center;">
+              <span style="font-size: 0.78rem; color: var(--text-dim);">รูปตัวอย่างในเครื่อง:</span>
+              <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="setAvatarPreset('images/avatar.jpg')">
+                🕶️ 3D Dev ดำ-เทา
+              </button>
+              <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="setAvatarPreset('images/avatar_bw.jpg')">
+                🖤 อนิเมะขาวดำ
+              </button>
+            </div>
+
+            <input type="text" id="input-avatar" class="form-control" placeholder="หรือวางลิงก์รูปภาพ เช่น images/avatar.jpg หรือ https://..." />
           </div>
 
           <div class="form-group">
@@ -183,8 +206,16 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">ลิงก์รูปภาพตัวอย่างผลงาน (Image URL)</label>
-            <input type="url" id="proj-image" class="form-control" placeholder="https://images.unsplash.com/..." />
+            <label class="form-label">รูปภาพตัวอย่างผลงาน</label>
+            <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 10px;">
+              <img id="proj-preview-img" src="" alt="Project Preview" style="width: 80px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-subtle); display: none;" />
+              <label class="btn btn-secondary" style="cursor: pointer; padding: 6px 14px; font-size: 0.82rem;">
+                📁 เลือกรูปภาพจากเครื่อง
+                <input type="file" id="proj-image-file" accept="image/*" style="display: none;" />
+              </label>
+              <span style="font-size: 0.78rem; color: var(--text-dim);">เลือกไฟล์จากเครื่องหรือวางลิงก์ด้านล่าง</span>
+            </div>
+            <input type="text" id="proj-image" class="form-control" placeholder="หรือวางลิงก์ URL รูปภาพ เช่น https://..." />
           </div>
 
           <div class="form-row">
