@@ -4,6 +4,8 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
+  setupMobileMenu();
+
   if (!window.PortfolioStore) return;
 
   // Realtime subscriber: updates immediately when admin saves to Firestore
@@ -16,6 +18,24 @@ document.addEventListener("DOMContentLoaded", () => {
     setupFilters(data.projects);
   });
 });
+
+function setupMobileMenu() {
+  const toggleBtn = document.getElementById("nav-toggle-btn");
+  const navMenu = document.getElementById("nav-menu");
+  if (!toggleBtn || !navMenu) return;
+
+  toggleBtn.addEventListener("click", () => {
+    toggleBtn.classList.toggle("active");
+    navMenu.classList.toggle("open");
+  });
+
+  navMenu.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", () => {
+      toggleBtn.classList.remove("active");
+      navMenu.classList.remove("open");
+    });
+  });
+}
 
 function renderProfile(profile) {
   if (!profile) return;
