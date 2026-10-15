@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio - ผลงานและประวัติส่วนตัว</title>
+  <meta name="description" content="พอร์ตโฟลิโอแสดงผลงาน พัฒนาซอฟต์แวร์ เว็บแอปพลิเคชัน และระบบ IoT โทน Dark Gray เรียบหรู" />
+
+  <!-- Google Fonts: Plus Jakarta Sans & Prompt (Thai) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="#" class="nav-logo">
+        <span>Portfolio</span>
+        <span class="nav-logo-badge">DEV</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#about">เกี่ยวกับฉัน</a></li>
+        <li><a href="#skills">ทักษะ</a></li>
+        <li><a href="#projects">ผลงานโปรเจกต์</a></li>
+        <li><a href="#contact">ติดต่อ</a></li>
+      </ul>
+
+      <a href="admin.html" class="nav-btn-admin" title="เข้าสู่ระบบจัดการข้อมูล">
+        <span>⚙️</span> จัดการข้อมูล
+      </a>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Ambient Glow Orbs -->
+    <div class="hero-glow-1"></div>
+    <div class="hero-glow-2"></div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="about">
+      <div class="hero-content">
+        <div class="hero-status-pill">
+          <span class="status-dot"></span>
+          <span id="profile-status">พร้อมรับงาน / พร้อมเริ่มงานทันที</span>
+        </div>
+
+        <h1 class="hero-title">
+          สวัสดีครับ, ผม <br />
+          <span class="gradient-text" id="profile-name">ชิษณุพงศ์ นมัสศิลา</span>
+          <span id="profile-en-name" style="font-size: 1.25rem; font-weight: 500; color: var(--text-dim); display: block; margin-top: 6px;">Chitsanupong Namatsila</span>
+        </h1>
+
+        <div class="hero-role-wrapper">
+          <span>⚡</span>
+          <span id="profile-title">Full-Stack Developer & IoT Enthusiast</span>
+        </div>
+
+        <p class="hero-subtitle" id="profile-bio">
+          นักพัฒนาซอฟต์แวร์และระบบ IoT ที่ใส่ใจในความสวยงาม คุณภาพโค้ด และประสบการณ์ของผู้ใช้งาน
+        </p>
+
+        <div class="hero-actions">
+          <a href="#projects" class="btn btn-primary">
+            🚀 ดูผลงานของฉัน
+          </a>
+          <a href="#contact" class="btn btn-secondary">
+            📬 ติดต่อสอบถาม
+          </a>
+          <a href="#" id="resume-btn" target="_blank" rel="noopener" class="btn btn-secondary" style="display: none;">
+            📄 ดาวน์โหลด Resume
+          </a>
+        </div>
+
+        <!-- Quick Tech Stack Bar -->
+        <div class="hero-tech-stack">
+          <span class="tech-stack-label">Tech Stack:</span>
+          <span class="tech-stack-item">⚛️ React</span>
+          <span class="tech-stack-item">🟢 Node.js</span>
+          <span class="tech-stack-item">🤖 ESP32 / IoT</span>
+          <span class="tech-stack-item">🐍 Python</span>
+          <span class="tech-stack-item">🐳 Docker</span>
+          <span class="tech-stack-item">⚡ JavaScript</span>
+        </div>
+      </div>
+
+      <div class="hero-avatar-wrap">
+        <div class="avatar-container-outer">
+          <!-- Floating Badge 1 (Top Left) -->
+          <div class="floating-badge badge-top-left">
+            <span class="floating-badge-icon">🤖</span>
+            <div>
+              <div class="floating-badge-title">IoT & Hardware</div>
+              <div class="floating-badge-sub">Smart Parking & ESP32</div>
+            </div>
+          </div>
+
+          <!-- Avatar Frame -->
+          <div class="avatar-frame">
+            <img
+              id="profile-avatar"
+              class="avatar-img"
+              src="images/avatar.jpg"
+              alt="Chitsanupong Namatsila Avatar"
+            />
+          </div>
+
+          <!-- Floating Badge 2 (Bottom Right) -->
+          <div class="floating-badge badge-bottom-right">
+            <span class="floating-badge-icon">💻</span>
+            <div>
+              <div class="floating-badge-title">Full-Stack Dev</div>
+              <div class="floating-badge-sub">Web & Real-Time App</div>
+            </div>
+          </div>
+
+          <!-- Floating Badge 3 (Bottom Left) -->
+          <div class="floating-badge badge-bottom-left">
+            <span class="floating-badge-icon">🚀</span>
+            <div>
+              <div class="floating-badge-title">4+ Projects</div>
+              <div class="floating-badge-sub">พร้อมให้เปิดชมผลงาน</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Banner -->
+    <div class="stats-banner">
+      <div class="stat-item-card">
+        <div class="stat-number">4+</div>
+        <div class="stat-label">ผลงานโปรเจกต์เด่น</div>
+      </div>
+      <div class="stat-item-card">
+        <div class="stat-number">8+</div>
+        <div class="stat-label">ภาษา & เครื่องมือพัฒนา</div>
+      </div>
+      <div class="stat-item-card">
+        <div class="stat-number">3+</div>
+        <div class="stat-label">ปี ประสบการณ์เรียนรู้และทำจริง</div>
+      </div>
+      <div class="stat-item-card">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">ความมุ่งมั่น & ใส่ใจในงาน</div>
+      </div>
+    </div>
+
+    <!-- Skills Section -->
+    <section class="section" id="skills">
+      <div class="section-header">
+        <span class="section-tag">Skills & Technologies</span>
+        <h2 class="section-title">ทักษะและความเชี่ยวชาญ</h2>
+        <p class="section-desc">เครื่องมือและเทคโนโลยีที่ใช้ในการออกแบบ พัฒนา และดูแลระบบ</p>
+      </div>
+
+      <div class="skills-grid" id="skills-container">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="section" id="projects">
+      <div class="section-header">
+        <span class="section-tag">Featured Works</span>
+        <h2 class="section-title">ผลงานโปรเจกต์ที่โดดเด่น</h2>
+        <p class="section-desc">ผลงานที่เคยพัฒนา ทั้งเว็บแอปพลิเคชัน ฮาร์ดแวร์ IoT และระบบต่างๆ</p>
+      </div>
+
+      <!-- Filters -->
+      <div class="project-filters">
+        <button class="filter-btn active" data-category="all">ทั้งหมด</button>
+        <button class="filter-btn" data-category="Web App">Web Application</button>
+        <button class="filter-btn" data-category="IoT / Hardware">IoT & Hardware</button>
+        <button class="filter-btn" data-category="Mobile / Web">Mobile / Other</button>
+      </div>
+
+      <!-- Grid -->
+      <div class="projects-grid" id="projects-container">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section" id="contact">
+      <div class="contact-card">
+        <span class="section-tag">Get In Touch</span>
+        <h2 class="section-title">สนใจร่วมงานหรือติดต่อพูดคุย?</h2>
+        <p class="section-desc">
+          สามารถติดต่อผมได้ผ่านช่องทางด้านล่างนี้เลยครับ ยินดีตอบกลับเสมอ
+        </p>
+
+        <div class="contact-links">
+          <a href="#" id="contact-email" class="contact-item-btn" style="display: none;">
+            <span>✉️</span> ส่งอีเมล
+          </a>
+          <a href="#" id="contact-github" target="_blank" rel="noopener" class="contact-item-btn" style="display: none;">
+            <span>🐙</span> GitHub
+          </a>
+          <a href="#" id="contact-linkedin" target="_blank" rel="noopener" class="contact-item-btn" style="display: none;">
+            <span>💼</span> LinkedIn
+          </a>
+          <a href="#" id="contact-facebook" target="_blank" rel="noopener" class="contact-item-btn" style="display: none;">
+            <span>🌐</span> Facebook
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>© 2026 Portfolio. Built with Modern Dark Aesthetic.</p>
+      <p style="margin-top: 8px;">
+        <a href="admin.html">⚙️ จัดการเนื้อหาหน้าเว็บ (Admin Dashboard)</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
