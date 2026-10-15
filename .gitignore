@@ -1,0 +1,5 @@
+# Ignore private admin studio from public repo
+admin/
+open-admin.bat
+.DS_Store
+Thumbs.db
