@@ -1,7 +1,16 @@
 /**
- * Portfolio Data Management Store
- * Supports LocalStorage caching, JSON Export/Import, and Cloud sync readiness
+ * Portfolio Data Management Store with Realtime Firebase Firestore Sync
  */
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAHGl2O2NtiwiBN8_ee_sGmIyyHavJihwg",
+  authDomain: "my-portfolio-db-7eb75.firebaseapp.com",
+  projectId: "my-portfolio-db-7eb75",
+  storageBucket: "my-portfolio-db-7eb75.firebasestorage.app",
+  messagingSenderId: "985596626673",
+  appId: "1:985596626673:web:9e86714dff646554784b50",
+  measurementId: "G-42KBHG7NFJ"
+};
 
 const DEFAULT_PORTFOLIO_DATA = {
   profile: {
@@ -67,20 +76,57 @@ const DEFAULT_PORTFOLIO_DATA = {
   ],
   contact: {
     email: "your.email@example.com",
-    github: "https://github.com",
+    github: "https://github.com/reverklo",
     linkedin: "https://linkedin.com",
     facebook: "https://facebook.com",
     location: "Bangkok, Thailand"
   },
   admin: {
-    pin: "1234" // Default PIN for admin page access (can be changed in settings)
+    pin: "1234"
   }
 };
 
 const STORAGE_KEY = "portfolio_site_data_v1";
 
+// Initialize Firebase if library is available
+let firestoreDb = null;
+if (typeof firebase !== "undefined") {
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    firestoreDb = firebase.firestore();
+  } catch (err) {
+    console.warn("Firebase init error:", err);
+  }
+}
+
 const PortfolioStore = {
-  // Get all data (from localStorage if present, otherwise default)
+  // Listen for real-time changes from Firebase Firestore
+  subscribeRealtime(onDataUpdate) {
+    // 1. Initial fallback from cache or default
+    const localData = this.getData();
+    if (onDataUpdate) onDataUpdate(localData);
+
+    // 2. Realtime listener from Cloud Firestore
+    if (firestoreDb) {
+      firestoreDb.collection("portfolio").doc("main")
+        .onSnapshot((doc) => {
+          if (doc.exists) {
+            const cloudData = doc.data();
+            this.saveData(cloudData); // update local cache
+            if (onDataUpdate) onDataUpdate(cloudData);
+          } else {
+            // First time: initialize cloud doc with default data
+            this.saveToCloud(localData);
+          }
+        }, (err) => {
+          console.warn("Firestore realtime listen error:", err);
+        });
+    }
+  },
+
+  // Get data (cache or default)
   getData() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -88,56 +134,35 @@ const PortfolioStore = {
         return JSON.parse(stored);
       }
     } catch (e) {
-      console.warn("Could not load from localStorage:", e);
+      console.warn("LocalStorage error:", e);
     }
     return JSON.parse(JSON.stringify(DEFAULT_PORTFOLIO_DATA));
   },
 
-  // Save data to localStorage
+  // Save to localStorage
   saveData(data) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       return true;
     } catch (e) {
-      console.error("Save failed:", e);
+      console.error("Save error:", e);
       return false;
     }
   },
 
-  // Reset to default data
-  resetDefault() {
-    localStorage.removeItem(STORAGE_KEY);
-    return JSON.parse(JSON.stringify(DEFAULT_PORTFOLIO_DATA));
-  },
-
-  // Export as downloadable JSON file
-  exportJSON() {
-    const data = this.getData();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `portfolio-data-${new Date().toISOString().split("T")[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  },
-
-  // Import JSON string
-  importJSON(jsonString) {
+  // Save directly to Firebase Cloud
+  async saveToCloud(data) {
+    this.saveData(data);
+    if (!firestoreDb) return false;
     try {
-      const parsed = JSON.parse(jsonString);
-      if (parsed && parsed.profile && parsed.projects) {
-        this.saveData(parsed);
-        return true;
-      }
-      return false;
-    } catch (e) {
-      console.error("Import error:", e);
+      await firestoreDb.collection("portfolio").doc("main").set(data);
+      return true;
+    } catch (err) {
+      console.error("Firebase saveToCloud error:", err);
       return false;
     }
   }
 };
 
 window.PortfolioStore = PortfolioStore;
+window.FIREBASE_CONFIG = FIREBASE_CONFIG;

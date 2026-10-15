@@ -4,14 +4,17 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-  const data = window.PortfolioStore ? window.PortfolioStore.getData() : null;
-  if (!data) return;
+  if (!window.PortfolioStore) return;
 
-  renderProfile(data.profile);
-  renderSkills(data.skills);
-  renderProjects(data.projects);
-  renderContact(data.contact);
-  setupFilters(data.projects);
+  // Realtime subscriber: updates immediately when admin saves to Firestore
+  window.PortfolioStore.subscribeRealtime((data) => {
+    if (!data) return;
+    renderProfile(data.profile);
+    renderSkills(data.skills);
+    renderProjects(data.projects);
+    renderContact(data.contact);
+    setupFilters(data.projects);
+  });
 });
 
 function renderProfile(profile) {
