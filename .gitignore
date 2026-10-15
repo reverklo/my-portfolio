@@ -1,5 +1,4 @@
-# Ignore private admin studio from public repo
-admin/
+# Local shortcuts and temp files
 open-admin.bat
 .DS_Store
 Thumbs.db
