@@ -54,10 +54,14 @@ function renderProfile(profile) {
   if (statusEl) statusEl.textContent = profile.statusText || "เปิดรับงาน";
   if (bioEl) bioEl.textContent = profile.bio;
   if (avatarEl) {
-    const avatarSrc = (profile.avatarUrl && !profile.avatarUrl.includes("unsplash")) 
-      ? profile.avatarUrl 
+    const avatarSrc = (profile.avatarUrl && profile.avatarUrl.trim()) 
+      ? profile.avatarUrl.trim() 
       : "images/avatar.jpg";
     avatarEl.src = avatarSrc;
+    avatarEl.onerror = () => {
+      // Fallback if image fails to load
+      avatarEl.src = "images/avatar.jpg";
+    };
   }
   if (resumeBtn && profile.resumeLink) {
     resumeBtn.href = profile.resumeLink;

@@ -150,16 +150,33 @@ const PortfolioStore = {
     }
   },
 
+  // Reset localStorage cache to default
+  resetLocal() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+
   // Save directly to Firebase Cloud
   async saveToCloud(data) {
-    this.saveData(data);
-    if (!firestoreDb) return false;
+    const localOk = this.saveData(data);
+    if (!firestoreDb) {
+      return { success: false, localSaved: localOk, error: "Firebase Firestore ยังไม่ได้เชื่อมต่อ" };
+    }
     try {
       await firestoreDb.collection("portfolio").doc("main").set(data);
-      return true;
+      return { success: true, localSaved: true };
     } catch (err) {
       console.error("Firebase saveToCloud error:", err);
-      return false;
+      return {
+        success: false,
+        localSaved: localOk,
+        error: err.message || "เกิดข้อผิดพลาดในการบันทึกขึ้น Cloud",
+        code: err.code || "UNKNOWN"
+      };
     }
   }
 };

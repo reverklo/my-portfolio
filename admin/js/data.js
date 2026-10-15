@@ -133,21 +133,61 @@ const PortfolioStore = {
   setLocal(data) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch (e) {}
+      return true;
+    } catch (e) {
+      console.warn("localStorage quota exceeded or error:", e);
+      return false;
+    }
+  },
+
+  // Reset local cache to defaults
+  resetLocal() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  // Check Firestore connection status
+  async checkCloudConnection() {
+    if (!firestoreDb) {
+      return { status: "NO_SDK", message: "Firebase SDK ยังไม่พร้อม" };
+    }
+    try {
+      await firestoreDb.collection("portfolio").doc("main").get();
+      return { status: "CONNECTED", message: "เชื่อมต่อ Cloud สำเร็จ" };
+    } catch (err) {
+      const msg = err.message || "";
+      const code = err.code || "";
+      if (msg.includes("not been used") || msg.includes("SERVICE_DISABLED") || code === "permission-denied" || code === "failed-precondition") {
+        return { status: "NEEDS_SETUP", message: "ยังไม่ได้เปิด Firestore Database ใน Firebase Console", error: msg, code };
+      }
+      return { status: "ERROR", message: msg, error: msg, code };
+    }
   },
 
   // Save to Firebase and Local
   async saveToCloud(data) {
-    this.setLocal(data);
-    if (!firestoreDb) return false;
+    const localOk = this.setLocal(data);
+    if (!firestoreDb) {
+      return { success: false, localSaved: localOk, error: "Firebase Firestore ยังไม่ได้เชื่อมต่อ", code: "NO_FIRESTORE" };
+    }
     try {
       await firestoreDb.collection("portfolio").doc("main").set(data);
-      return true;
+      return { success: true, localSaved: true };
     } catch (err) {
       console.error("Firebase save error:", err);
-      return false;
+      return {
+        success: false,
+        localSaved: localOk,
+        error: err.message || "เกิดข้อผิดพลาดในการบันทึกขึ้น Cloud",
+        code: err.code || "UNKNOWN"
+      };
     }
   }
 };
 
 window.PortfolioStore = PortfolioStore;
+

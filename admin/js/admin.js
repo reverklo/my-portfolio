@@ -1,6 +1,6 @@
 /**
  * Dedicated Admin Studio Script
- * Cloud-First Firestore Save & Edit
+ * Cloud-First Firestore Save & Edit with Auto Image Compression
  */
 
 let appData = null;
@@ -24,8 +24,101 @@ document.addEventListener("DOMContentLoaded", () => {
         renderAllAdminViews();
       }
     });
+
+    // 4. Check Firestore Cloud status
+    checkCloudStatus();
   }
 });
+
+/* ----------------------------------------------------
+   CLIENT-SIDE IMAGE COMPRESSION (CANVAS)
+   Resizes to max dimensions & quality to keep Base64 < 45KB
+   Guarantees it never exceeds Firestore (1MB) or LocalStorage (5MB)
+   ---------------------------------------------------- */
+function compressImage(file, maxWidth = 450, maxHeight = 450, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.type.startsWith("image/")) {
+      return reject(new Error("กรุณาเลือกไฟล์รูปภาพที่ถูกต้อง (JPG, PNG, WebP)"));
+    }
+
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("ไม่สามารถอ่านไฟล์ได้"));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("ไฟล์รูปภาพเสียหายหรือไม่รองรับ"));
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        // Downscale proportionally if larger than maximums
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", quality);
+        resolve(compressedDataUrl);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ----------------------------------------------------
+   CLOUD STATUS CHECK
+   ---------------------------------------------------- */
+async function checkCloudStatus() {
+  const badge = document.getElementById("cloud-status-badge");
+  if (!badge || !window.PortfolioStore) return;
+
+  const res = await window.PortfolioStore.checkCloudConnection();
+  if (res.status === "CONNECTED") {
+    badge.innerHTML = `<span style="color: #22c55e;">🟢 Cloud Firestore: เชื่อมต่อสำเร็จ พร้อมซิงค์สด</span>`;
+    badge.style.borderColor = "rgba(34, 197, 94, 0.3)";
+  } else if (res.status === "NEEDS_SETUP") {
+    badge.innerHTML = `
+      <span style="color: #f59e0b; cursor: pointer; text-decoration: underline;" onclick="showFirestoreHelpModal()">
+        🟡 Firestore ยังไม่ได้เปิดใน Firebase (คลิกดูวิธีเปิด 1 นาที) ⚠️
+      </span>
+    `;
+    badge.style.borderColor = "rgba(245, 158, 11, 0.4)";
+  } else {
+    badge.innerHTML = `<span style="color: #94a3b8;">⚪ โหมดออฟไลน์ (กำลังบันทึกเฉพาะในเครื่องนี้)</span>`;
+  }
+}
+
+window.checkCloudStatusAgain = async function() {
+  showToast("⏳ กำลังตรวจสอบการเชื่อมต่อ Cloud...");
+  await checkCloudStatus();
+  const badge = document.getElementById("cloud-status-badge");
+  if (badge && badge.textContent.includes("เชื่อมต่อสำเร็จ")) {
+    showToast("🎉 ยอดเยี่ยม! Firestore เชื่อมต่อสำเร็จแล้ว");
+    closeFirestoreHelpModal();
+  } else {
+    showToast("⚠️ ยังไม่พบ Firestore (กรุณากด Create Database ใน Firebase ก่อน)");
+  }
+};
+
+window.showFirestoreHelpModal = function() {
+  const modal = document.getElementById("firestore-help-modal");
+  if (modal) modal.style.display = "flex";
+};
+
+window.closeFirestoreHelpModal = function() {
+  const modal = document.getElementById("firestore-help-modal");
+  if (modal) modal.style.display = "none";
+};
 
 /* ----------------------------------------------------
    AUTHENTICATION (PIN)
@@ -105,10 +198,15 @@ function loadProfileForm() {
   document.getElementById("input-title").value = p.title || "";
   document.getElementById("input-status").value = p.statusText || "";
   
-  const avatarPath = (p.avatarUrl && !p.avatarUrl.includes("unsplash")) ? p.avatarUrl : "images/avatar.jpg";
+  const avatarPath = (p.avatarUrl && p.avatarUrl.trim()) ? p.avatarUrl.trim() : "images/avatar.jpg";
   document.getElementById("input-avatar").value = avatarPath;
   const previewImg = document.getElementById("avatar-preview-img");
-  if (previewImg) previewImg.src = avatarPath;
+  if (previewImg) {
+    previewImg.src = avatarPath;
+    previewImg.onerror = () => {
+      previewImg.src = "images/avatar.jpg";
+    };
+  }
 
   document.getElementById("input-bio").value = p.bio || "";
   document.getElementById("input-resume").value = p.resumeLink || "";
@@ -175,49 +273,77 @@ function loadContactForm() {
    FORMS & ACTIONS
    ---------------------------------------------------- */
 function initForms() {
-  // Avatar file picker & preview
+  // Avatar file picker & preview with Auto Canvas Compression
   const avatarFile = document.getElementById("input-avatar-file");
   const avatarInput = document.getElementById("input-avatar");
   const avatarPreview = document.getElementById("avatar-preview-img");
+  const avatarHint = document.getElementById("avatar-upload-hint");
 
   if (avatarFile) {
-    avatarFile.addEventListener("change", (e) => {
+    avatarFile.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        avatarInput.value = event.target.result;
-        if (avatarPreview) avatarPreview.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
+
+      if (avatarHint) avatarHint.innerHTML = `<span>⏳ กำลังย่อขนาดรูปภาพให้โหลดเร็ว...</span>`;
+
+      try {
+        const compressedBase64 = await compressImage(file, 450, 450, 0.82);
+        avatarInput.value = compressedBase64;
+        if (avatarPreview) avatarPreview.src = compressedBase64;
+        if (avatarHint) {
+          avatarHint.innerHTML = `<span style="color: #22c55e;">✅ รูปภาพพร้อมแล้ว (ขนาดกะทัดรัด คมชัด) - อย่าลืมกดปุ่มบันทึกด้านล่าง</span>`;
+        }
+      } catch (err) {
+        alert("เกิดข้อผิดพลาดในการโหลดรูป: " + err.message);
+        if (avatarHint) avatarHint.textContent = "เกิดข้อผิดพลาดในการโหลดรูป";
+      }
     });
   }
 
   if (avatarInput && avatarPreview) {
     avatarInput.addEventListener("input", (e) => {
       const val = e.target.value.trim();
-      if (val) avatarPreview.src = val;
+      if (val) {
+        avatarPreview.src = val;
+      }
     });
   }
 
-  // Project image picker & preview
+  // Quick Save Avatar button
+  const quickSaveBtn = document.getElementById("quick-save-avatar-btn");
+  if (quickSaveBtn) {
+    quickSaveBtn.addEventListener("click", async () => {
+      const avatarVal = (avatarInput.value || "").trim();
+      if (!appData.profile) appData.profile = {};
+      appData.profile.avatarUrl = avatarVal;
+      await saveAndNotify("บันทึกรูปโปรไฟล์ขึ้น Cloud เรียบร้อยแล้ว!");
+    });
+  }
+
+  // Project image picker & preview with Auto Canvas Compression
   const projImageFile = document.getElementById("proj-image-file");
   const projImageInput = document.getElementById("proj-image");
   const projPreview = document.getElementById("proj-preview-img");
+  const projHint = document.getElementById("proj-upload-hint");
 
   if (projImageFile) {
-    projImageFile.addEventListener("change", (e) => {
+    projImageFile.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        projImageInput.value = event.target.result;
+
+      if (projHint) projHint.innerHTML = `<span>⏳ กำลังย่อรูปโปรเจกต์...</span>`;
+
+      try {
+        const compressedBase64 = await compressImage(file, 800, 500, 0.82);
+        projImageInput.value = compressedBase64;
         if (projPreview) {
-          projPreview.src = event.target.result;
+          projPreview.src = compressedBase64;
           projPreview.style.display = "block";
         }
-      };
-      reader.readAsDataURL(file);
+        if (projHint) projHint.innerHTML = `<span style="color: #22c55e;">✅ ย่อรูปโปรเจกต์พร้อมใช้งานแล้ว</span>`;
+      } catch (err) {
+        alert("เกิดข้อผิดพลาดในการโหลดรูป: " + err.message);
+      }
     });
   }
 
@@ -233,7 +359,7 @@ function initForms() {
     });
   }
 
-  // Save Profile
+  // Save Profile Form
   document.getElementById("profile-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     appData.profile = {
@@ -343,8 +469,30 @@ function initForms() {
 window.setAvatarPreset = function(path) {
   const avatarInput = document.getElementById("input-avatar");
   const avatarPreview = document.getElementById("avatar-preview-img");
+  const avatarHint = document.getElementById("avatar-upload-hint");
+
   if (avatarInput) avatarInput.value = path;
   if (avatarPreview) avatarPreview.src = path;
+  if (avatarHint) {
+    avatarHint.innerHTML = `<span style="color: #22c55e;">เลือก '${path}' แล้ว (อย่าลืมกดปุ่มบันทึกรูปด้านล่าง)</span>`;
+  }
+};
+
+window.resetAvatarToDefault = async function() {
+  if (confirm("ต้องการรีเซ็ตภาพโปรไฟล์กลับเป็นรูป 3D Dev เริ่มต้นใช่หรือไม่?")) {
+    const avatarInput = document.getElementById("input-avatar");
+    const avatarPreview = document.getElementById("avatar-preview-img");
+    const avatarHint = document.getElementById("avatar-upload-hint");
+
+    const defaultPath = "images/avatar.jpg";
+    if (avatarInput) avatarInput.value = defaultPath;
+    if (avatarPreview) avatarPreview.src = defaultPath;
+    if (!appData.profile) appData.profile = {};
+    appData.profile.avatarUrl = defaultPath;
+
+    if (avatarHint) avatarHint.innerHTML = `<span style="color: #22c55e;">รีเซ็ตเป็นรูปเริ่มต้นแล้ว</span>`;
+    await saveAndNotify("รีเซ็ตรูปโปรไฟล์เป็นค่าเริ่มต้นเรียบร้อยแล้ว!");
+  }
 };
 
 window.editProject = function(id) {
@@ -390,24 +538,42 @@ window.deleteSkill = async function(index) {
 };
 
 async function saveAndNotify(msg) {
-  showToast("⏳ กำลังบันทึกขึ้น Cloud...");
-  const ok = await window.PortfolioStore.saveToCloud(appData);
-  if (ok) {
-    showToast("☁️ " + msg);
+  showToast("⏳ กำลังบันทึกข้อมูล...");
+  const res = await window.PortfolioStore.saveToCloud(appData);
+
+  if (res && res.success) {
+    showToast("☁️ " + msg, 3500);
+    checkCloudStatus();
   } else {
-    showToast("⚠️ บันทึกในเครื่องแล้ว (กรุณาเช็คสิทธิ์ Firestore)");
+    const errorMsg = (res && res.error) || "";
+    const errorCode = (res && res.code) || "";
+
+    if (
+      errorCode === "permission-denied" || 
+      errorCode === "failed-precondition" ||
+      errorMsg.includes("not been used") || 
+      errorMsg.includes("SERVICE_DISABLED")
+    ) {
+      showToast("⚠️ บันทึกในเครื่องแล้ว! แต่ Firestore ยังไม่ได้กดสร้างใน Firebase (คลิกดูวิธีแก้)", 7000, true);
+      showFirestoreHelpModal();
+    } else {
+      showToast("⚠️ บันทึกในเครื่องแล้ว (" + (errorMsg || "กรุณาเช็คการเชื่อมต่อ") + ")", 4000, true);
+    }
   }
 }
 
-function showToast(msg) {
+function showToast(msg, duration = 3000, isWarning = false) {
   const toast = document.getElementById("admin-toast");
   if (!toast) return;
   toast.textContent = msg;
   toast.style.display = "block";
   toast.style.opacity = "1";
+  toast.style.borderColor = isWarning ? "rgba(245, 158, 11, 0.6)" : "rgba(255, 255, 255, 0.2)";
+  toast.style.color = isWarning ? "#fbbf24" : "#ffffff";
 
-  setTimeout(() => {
+  if (toast._timer) clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => {
     toast.style.opacity = "0";
     setTimeout(() => { toast.style.display = "none"; }, 300);
-  }, 2500);
+  }, duration);
 }

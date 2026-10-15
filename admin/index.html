@@ -74,6 +74,9 @@
         <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">
           ระบบจัดการหลังบ้าน เชื่อมต่อคลาวด์ Firebase Firestore อัปเดตสดแบบเรียลไทม์
         </p>
+        <div id="cloud-status-badge" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 0.85rem; padding: 4px 12px; border-radius: 20px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-subtle);">
+          ⏳ กำลังตรวจสอบการเชื่อมต่อ Cloud...
+        </div>
       </div>
 
       <a href="../index.html" class="btn btn-primary" target="_blank" rel="noopener">
@@ -128,13 +131,13 @@
                   📁 เลือกไฟล์รูปจากเครื่องคอม
                   <input type="file" id="input-avatar-file" accept="image/*" style="display: none;" />
                 </label>
-                <div style="font-size: 0.78rem; color: var(--text-dim); margin-top: 6px;">
-                  เลือกไฟล์รูปในเครื่องได้โดยตรง (JPG, PNG) หรือวางลิงก์/ที่อยู่ไฟล์ด้านล่าง
+                <div id="avatar-upload-hint" style="font-size: 0.78rem; color: var(--text-dim); margin-top: 6px;">
+                  เลือกไฟล์รูปในเครื่องได้โดยตรง (JPG, PNG) ระบบจะย่อขนาดให้อัตโนมัติและบันทึกขึ้น Cloud
                 </div>
               </div>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center;">
+            <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center; flex-wrap: wrap;">
               <span style="font-size: 0.78rem; color: var(--text-dim);">รูปตัวอย่างในระบบ:</span>
               <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="setAvatarPreset('images/avatar.jpg')">
                 🕶️ 3D Dev ดำ-เทา
@@ -142,9 +145,18 @@
               <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="setAvatarPreset('images/avatar_bw.jpg')">
                 🖤 อนิเมะขาวดำ
               </button>
+              <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem; color: #ef4444;" onclick="resetAvatarToDefault()">
+                🔄 รีเซ็ตเป็นรูปเริ่มต้น
+              </button>
             </div>
 
             <input type="text" id="input-avatar" class="form-control" placeholder="หรือวางลิงก์รูปภาพ เช่น images/avatar.jpg หรือ https://..." />
+
+            <div style="margin-top: 10px; display: flex; gap: 10px;">
+              <button type="button" id="quick-save-avatar-btn" class="btn btn-secondary" style="font-size: 0.85rem; padding: 6px 14px; border-color: rgba(255,255,255,0.25);">
+                💾 บันทึกรูปโปรไฟล์นี้ทันที
+              </button>
+            </div>
           </div>
 
           <div class="form-group">
@@ -199,13 +211,13 @@
 
           <div class="form-group">
             <label class="form-label">รูปภาพตัวอย่างผลงาน</label>
-            <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 10px;">
+            <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
               <img id="proj-preview-img" src="" alt="Project Preview" style="width: 80px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-subtle); display: none;" />
               <label class="btn btn-secondary" style="cursor: pointer; padding: 6px 14px; font-size: 0.82rem;">
                 📁 เลือกรูปภาพจากเครื่อง
                 <input type="file" id="proj-image-file" accept="image/*" style="display: none;" />
               </label>
-              <span style="font-size: 0.78rem; color: var(--text-dim);">เลือกไฟล์จากเครื่องหรือวางลิงก์ด้านล่าง</span>
+              <span id="proj-upload-hint" style="font-size: 0.78rem; color: var(--text-dim);">เลือกไฟล์จากเครื่อง ระบบจะย่อขนาดให้อัตโนมัติ</span>
             </div>
             <input type="text" id="proj-image" class="form-control" placeholder="หรือวางลิงก์ URL รูปภาพ เช่น https://..." />
           </div>
@@ -333,6 +345,44 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- Firestore Setup Guidance Modal -->
+  <div class="modal-overlay" id="firestore-help-modal" style="display: none;">
+    <div class="modal-box" style="max-width: 500px; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+          <span>☁️</span> เปิดใช้งาน Cloud Firestore
+        </h3>
+        <button type="button" onclick="closeFirestoreHelpModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+
+      <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin-bottom: 16px;">
+        คุณได้สร้าง Firebase Project แล้ว แต่ยังไม่ได้เปิดใช้งานฐานข้อมูล <strong>Firestore Database</strong> จึงทำให้ระบบยังไม่สามารถบันทึกข้อมูลและรูปภาพขึ้น Cloud เพื่ออัปเดตแบบเรียลไทม์ได้
+      </p>
+
+      <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
+        <div style="font-weight: 600; margin-bottom: 10px; font-size: 0.95rem; color: #fff;">
+          📌 วิธีเปิดใช้งาน (ทำเพียง 1 นาที):
+        </div>
+        <ol style="margin-left: 20px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.7;">
+          <li>สลับไปที่แท็บ <strong>Firebase Console</strong> (โปรเจกต์ <code>my-portfolio-db</code>) ที่เปิดอยู่</li>
+          <li>ที่แถบเมนูด้านซ้าย เลือกเมนู <strong>Firestore Database</strong></li>
+          <li>คลิกปุ่มสีส้ม <strong>"Create database"</strong> (สร้างฐานข้อมูล)</li>
+          <li>เลือก Location (ใช้ค่าเริ่มต้นได้เลย) แล้วกด <strong>Next</strong></li>
+          <li>เลือก <strong>"Start in test mode"</strong> (เริ่มต้นในโหมดทดสอบ) แล้วกด <strong>Enable</strong></li>
+        </ol>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-primary" style="flex: 1;" onclick="checkCloudStatusAgain()">
+          🔄 ตรวจสอบการเชื่อมต่ออีกครั้ง
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="closeFirestoreHelpModal()">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Firebase SDKs -->
